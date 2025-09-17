@@ -3,6 +3,7 @@
 # Salidas: stdout con formato: comm count avg_pcpu avg_pmem pcpumax pmemmax
 # Descripcion: agrupa por comando (comm), muestra promedios y máximos de CPU y MEM
 
+declare -A count sum_cpu sum_mem max_cpu max_mem
 
 while read -r _ _ _ comm pcpu pmem; do
     [[ -z "$comm" ]] && continue
