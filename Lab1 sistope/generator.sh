@@ -4,6 +4,7 @@
 # Output: lista de procesos ordenada por uso de CPU, compatible con preprocess.sh
 
 # Parseo de flags
+echo "Starting process generator..." >&2
 while getopts "i:t:" opt; do
   case $opt in
     i) INTERVALO=$OPTARG ;;

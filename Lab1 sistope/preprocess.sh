@@ -2,6 +2,7 @@
 # Preprocesa datos de procesos desde stdin, agregando timestamp ISO 8601 por línea
 # Se asegura de que la salida se vea en pantalla inmediatamente
 
+echo "Starting preprocess..." >&2
 while read -r line; do 
   # Salta líneas vacías
   [[ -z "$line" ]] && continue
@@ -13,5 +14,3 @@ while read -r line; do
     echo "$TS $line"  # salida con timestamp
   fi
 done
-
-
