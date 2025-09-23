@@ -3,28 +3,34 @@
 # Input: cada x segundos (-i), durante el tiempo total (-t)
 # Output: lista de procesos ordenada por uso de CPU, compatible con preprocess.sh
 
-# Parseo de flags
+# Mensaje inicial comienzo de proceso
 echo "Starting process generator..." >&2
+
+# Parseo de flags
+# -i : segundos del intervalo a capturar
+# -t : tiempo total de ejecución en segundos
 while getopts "i:t:" opt; do
   case $opt in
-    i) INTERVALO=$OPTARG ;;
-    t) TIEMPO=$OPTARG ;;
-    *) echo "Uso: $0 -i INTERVALO -t TIEMPO"; exit 1 ;;
+    i) INTERVALO=$OPTARG ;;    # guarda -i en INTERVALO
+    t) TIEMPO=$OPTARG ;;      # guarda -t en TIEMPO
+    *) echo "Uso: $0 -i INTERVALO -t TIEMPO"; exit 1 ;; # Si hay parámetros inválidos finaliza con error
   esac
 done
 
 # Validación de parámetros
-if [[ -z "$INTERVALO" || -z "$TIEMPO" ]]; then
-  echo "Error: debes indicar -i INTERVALO y -t TIEMPO"
+if [[ -z "$INTERVALO" || -z "$TIEMPO" ]]; then    # Si alguno de los valores es vacío...
+  echo "Error: debes indicar -i INTERVALO y -t TIEMPO"  # Muestra error
   exit 1
 fi
 
-INICIO=$(date +%s)
+INICIO=$(date +%s) # Guarda la hora de inicio en segundos
 
 # Loop principal
-while [ $(( $(date +%s) - INICIO )) -lt $TIEMPO ]; do 
+while [ $(( $(date +%s) - INICIO )) -lt $TIEMPO ]; do   # Se ejecuta hasta alcanzar el tiempo total
   # Genera lista de procesos ordenada por uso de CPU
   # Solo imprime las columnas necesarias (pid, uid, comm, pcpu, pmem)
+  # ps -eo muestra las columnas personalizas
+  # --sort=-%cpu ordena por consumo de CPU de mayor a menor
   ps -eo pid=,uid=,comm=,pcpu=,pmem= --sort=-%cpu
-  sleep "$INTERVALO"
+  sleep "$INTERVALO" # Espera los segundos indicados y luego vuelve al bucle
 done
