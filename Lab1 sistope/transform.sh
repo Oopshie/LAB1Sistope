@@ -12,15 +12,29 @@ fi
 
 # Leer stdin línea por línea
 while read -r line; do
-  [[ -z "$line" ]] && continue  #Ignora las líneas vacías
-  # separar columnas:
-  # Formato esperado: timestamp pid uid comm pcpu pmem
-  TS=$(echo "$line" | awk '{print $1}')
-  PID=$(echo "$line" | awk '{print $2}')
-  User_ID=$(echo "$line" | awk '{print $3}')
-  COMM=$(echo "$line" | awk '{print $4}')
-  PCPU=$(echo "$line" | awk '{print $5}')
-  PMEM=$(echo "$line" | awk '{print $6}')
+  [[ -z "$line" ]] && continue  # Ignora líneas vacías
+
+  NF=$(echo "$line" | awk '{print NF}')
+
+  if [[ $NF -eq 6 ]]; then
+    # Con timestamp
+    TS=$(echo "$line" | awk '{print $1}')
+    PID=$(echo "$line" | awk '{print $2}')
+    User_ID=$(echo "$line" | awk '{print $3}')
+    COMM=$(echo "$line" | awk '{print $4}')
+    PCPU=$(echo "$line" | awk '{print $5}')
+    PMEM=$(echo "$line" | awk '{print $6}')
+  elif [[ $NF -eq 5 ]]; then
+    # Sin timestamp
+    TS=""  # No hay timestamp
+    PID=$(echo "$line" | awk '{print $1}')
+    User_ID=$(echo "$line" | awk '{print $2}')
+    COMM=$(echo "$line" | awk '{print $3}')
+    PCPU=$(echo "$line" | awk '{print $4}')
+    PMEM=$(echo "$line" | awk '{print $5}')
+  else
+    continue  # Ignora líneas incorrectas
+  fi
 
 # Procesamiento según modelo:
   if $ANON; then  # Si ANON está activado
