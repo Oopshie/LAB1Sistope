@@ -1,16 +1,17 @@
 #!/bin/bash
-# filter.sh filtra procesos según uso mínimo de CPU, MEM y expresión regular en el nombre del comando
+# Descripción: Filtra procesos según uso mínimo de CPU, MEM y expresión regular en el nombre del comando.
 # Input: salida de preprocess.sh (con o sin timestamp: pid uid comm pcpu pmem / ts pid uid comm pcpu pmem)
 # Output: solo las líneas que cumplen con los filtros de CPU, MEM y REGEX
 
 # Uso: ./filter.sh -c CPU_MIN -m MEM_MIN -r REGEX
 
+#Mensaje de inicio de proceso
 echo "Starting filter..." >&2
 
 # Valores por defecto
 CPU_MIN=0   # % mínimo de CPU
 MEM_MIN=0   # % mínimo de Memoria
-REGEX=".*"  # Filtro nombre de comando
+REGEX=".*"  # Filtro nombre de comando (por defecto acepta cualquiera)
 
 # Parseo de flags
 # -c : CPU mínima
@@ -21,7 +22,7 @@ while getopts "c:m:r:" opt; do
     c) CPU_MIN=$OPTARG ;;  # Asigna CPU mínima
     m) MEM_MIN=$OPTARG ;;  # Asigna Memoria mínima
     r) REGEX=$OPTARG ;;    # Asigna regex
-    *) echo "Uso: $0 -c CPU_MIN -m MEM_MIN -r REGEX" >&2; exit 1 ;;  # En caso de error, finaliza
+    *) echo "Uso: $0 -c CPU_MIN -m MEM_MIN -r REGEX" >&2; exit 1 ;;  # En caso de algún argumento inválido, muestra el uso y finaliza
   esac
 done
 
@@ -31,15 +32,15 @@ MEM_MIN=$(echo "$MEM_MIN" | tr , .)
 
 # Validación de parámetros: deben ser números positivos (enteros o decimales) entre 0 y 100
 for value in "$CPU_MIN" "$MEM_MIN"; do
-  if ! [[ "$value" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
+  if ! [[ "$value" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then  # Comprueba que el número es válido
     echo "Error: CPU_MIN y MEM_MIN deben ser números positivos (entero o decimal)" >&2
     exit 1
   fi
-  if (( $(echo "$value < 0" | bc -l) )); then
+  if (( $(echo "$value < 0" | bc -l) )); then  # Comprueba que no sea valor negativo
     echo "Error: los valores no pueden ser negativos" >&2
     exit 1
   fi
-  if (( $(echo "$value > 100" | bc -l) )); then
+  if (( $(echo "$value > 100" | bc -l) )); then  # Comprueba que no supere el 100%
     echo "Error: los valores no pueden ser mayores que 100" >&2
     exit 1
   fi
