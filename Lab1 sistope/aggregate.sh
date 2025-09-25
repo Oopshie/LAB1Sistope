@@ -1,13 +1,14 @@
 #!/bin/bash
-# aggregate.sh Agrega estadísticas de procesos agrupados por comando, mostrando promedios y máximos de CPU y MEM
+# Descripción: Agrega estadísticas de procesos agrupados por comando, mostrando promedios y máximos de CPU y MEM
 # Input:  stdin con formato: 
 #         - con timestamp: timestamp pid uid comm pcpu pmem
 #         - sin timestamp: pid uid comm pcpu pmem
 # Output: tabla con formato: comm count avg_pcpu max_pcpu avg_pmem max_pmem
 
+# Mensaje de inicio de proceso
 echo "Starting aggregation..." >&2
 
-# Array asociativo:
+# Declaración de Arrays asociativos para acumular las estadísticas por comando:
 # count -> ocurrencias por comando
 # sum_cpu -> acumulador de cpu por comando
 # sum_mem -> acumulador de memoria por comando
@@ -15,9 +16,9 @@ echo "Starting aggregation..." >&2
 # max_mem -> máximo valor de memoria por comando
 declare -A count sum_cpu sum_mem max_cpu max_mem
 
-# Leer la entrada ignorando las primeras 3 columnas (timestamp, pid, uid). Solo considera comm, pcpu y pmem
+# Leer la entrada stdin línea por línea
 while read -r line; do
-    [[ -z "$line" ]] && continue    # Si la línea está vacía ignora la línea
+    [[ -z "$line" ]] && continue    # Ignora la línea si está vacía
 
     # Reemplazar coma por punto en los números
     line=$(echo "$line" | tr , .)
@@ -25,7 +26,7 @@ while read -r line; do
     # Obtener la cantidad de columnas de la línea
     NF=$(echo "$line" | awk '{print NF}')
 
-    # Asignación de variables según el número de columnas
+    # Asignación de variables según el formato de la línea
     if [[ $NF -eq 6 ]]; then
         # Caso con timestamp
         comm=$(echo "$line" | awk '{print $4}')   # Columna 4 = comando
@@ -44,13 +45,13 @@ while read -r line; do
     pcpu=$(printf "%.2f" "$pcpu")
     pmem=$(printf "%.2f" "$pmem")
 
-    # Contador de procesos por comando
+    # Incrementa el contador de procesos por comando
     ((count[$comm]++))
 
-    # Acumulador de CPU
+    # Suma el valor de CPU
     sum_cpu[$comm]=$(echo "${sum_cpu[$comm]:-0} + $pcpu" | bc -l)
 
-    # Acumulador de MEM
+    # Suma el valor de MEM
     sum_mem[$comm]=$(echo "${sum_mem[$comm]:-0} + $pmem" | bc -l)
 
     # Si el máximo cpu actual es 0 ó la cpu del proceso actual es mayor al máximo, se actualiza el valor de max_cpu por la cpu del proceso actual.
